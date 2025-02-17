@@ -28,11 +28,19 @@ class MainWindow(QMainWindow):
         if event.key() == QtCore.Qt.Key.Key_PageUp:
             if self.map_zoom < 21:
                 self.map_zoom += 1
-            self.refresh_map()
         if event.key() == QtCore.Qt.Key.Key_PageDown:
             if self.map_zoom > 0:
                 self.map_zoom -= 1
-            self.refresh_map()
+        if event.key() == QtCore.Qt.Key.Key_Left:
+            self.map_ll[0] -= 0.001
+        if event.key() == QtCore.Qt.Key.Key_Right:
+            self.map_ll[0] += 0.001
+        if event.key() == QtCore.Qt.Key.Key_Up:
+            self.map_ll[1] += 0.0007
+        if event.key() == QtCore.Qt.Key.Key_Down:
+            self.map_ll[1] -= 0.0007
+
+        self.refresh_map()
 
     def refresh_map(self):
         map_params = {
