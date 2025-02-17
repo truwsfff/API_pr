@@ -3,7 +3,7 @@ import requests
 
 from requests.adapters import HTTPAdapter
 from urllib3.util.retry import Retry
-from PyQt6 import uic
+from PyQt6 import uic, QtCore
 from PyQt6.QtGui import QPixmap, QImage
 from PyQt6.QtWidgets import QApplication, QLabel, QMainWindow
 
@@ -25,7 +25,14 @@ class MainWindow(QMainWindow):
         self.refresh_map()
 
     def keyPressEvent(self, event):
-        pass
+        if event.key() == QtCore.Qt.Key.Key_PageUp:
+            if self.map_zoom < 21:
+                self.map_zoom += 1
+            self.refresh_map()
+        if event.key() == QtCore.Qt.Key.Key_PageDown:
+            if self.map_zoom > 0:
+                self.map_zoom -= 1
+            self.refresh_map()
 
     def refresh_map(self):
         map_params = {
