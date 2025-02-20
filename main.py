@@ -7,7 +7,6 @@ from PyQt6 import uic, QtCore
 from PyQt6.QtGui import QPixmap, QImage
 from PyQt6.QtWidgets import QApplication, QLabel, QMainWindow
 
-
 api_key = 'f3a0fe3a-b07e-4840-a1da-06f18b2ddf13'
 
 
@@ -18,10 +17,27 @@ class MainWindow(QMainWindow):
         super().__init__(*args, **kwargs)
         uic.loadUi('design.ui', self)
 
+        self.map_params = None
         self.map_zoom = 17
         self.map_ll = [30.302348, 59.991619]
         self.map_key = ''
 
+        self.map_params = {
+            'll': ','.join(map(str, self.map_ll)),
+            'z': self.map_zoom,
+            'theme': 'dark',
+            'apikey': api_key
+        }
+
+        self.refresh_map()
+        self.light_but.clicked.connect(self.change_theme)
+        self.dark_but.clicked.connect(self.change_theme)
+
+    def change_theme(self):
+        if self.sender() == self.light_but:
+            self.map_params['theme'] = 'light'
+        else:
+            self.map_params['theme'] = 'dark'
         self.refresh_map()
 
     def keyPressEvent(self, event):
@@ -31,6 +47,9 @@ class MainWindow(QMainWindow):
         if event.key() == QtCore.Qt.Key.Key_PageDown:
             if self.map_zoom > 0:
                 self.map_zoom -= 1
+
+        self.map_params['z'] = self.map_zoom
+
         if event.key() == QtCore.Qt.Key.Key_Left:
             self.map_ll[0] -= 0.001
         if event.key() == QtCore.Qt.Key.Key_Right:
@@ -40,19 +59,18 @@ class MainWindow(QMainWindow):
         if event.key() == QtCore.Qt.Key.Key_Down:
             self.map_ll[1] -= 0.0007
 
+        self.map_params['ll'] = ','.join(map(str, self.map_ll))
+
         self.refresh_map()
 
     def refresh_map(self):
-        map_params = {
-            'll': ','.join(map(str, self.map_ll)),
-            'z': self.map_zoom,
-            'apikey': api_key
-        }
         session = requests.Session()
         retry = Retry(total=10, connect=5, backoff_factor=0.5)
         adapter = HTTPAdapter(max_retries=retry)
         session.mount('http://', adapter)
-        response = session.get('https://static-maps.yandex.ru/v1?', params=map_params)
+        print(self.map_params)
+        response = session.get('https://static-maps.yandex.ru/v1?',
+                               params=self.map_params)
         img = QImage.fromData(response.content)
         pixmap = QPixmap.fromImage(img)
         self.QMap.setPixmap(pixmap)
